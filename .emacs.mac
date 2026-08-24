@@ -1,0 +1,63 @@
+(global-display-line-numbers-mode 1)
+(setq-default cursor-type 'bar)
+(recentf-mode 1)
+(tool-bar-mode 0)
+(electric-pair-mode 1)
+(defvar term-name "*terminal*")
+
+(defun get-term ()
+  (if (get-buffer term-name)
+      (switch-to-buffer term-name)
+    (ansi-term "zsh" "terminal")))
+
+(setq make-backup-files nil
+      auto-save-default t)
+
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(defun my-compile-and-run ()
+  (interactive)
+  (save-buffer)
+  (let* ((file (buffer-file-name))
+         (base (file-name-sans-extension file)))
+    (get-term)
+    (term-send-raw-string "clear\n")
+    (term-send-raw-string (format "g++ -std=c++17 -Wall -o %s '%s' && %s\n" base file base))))
+
+(defun python-run ()
+  (interactive)
+  (save-buffer)
+  (let ((file (buffer-file-name)))
+    (get-term)
+    (term-send-raw-string "clear\n")
+    (term-send-raw-string (format "python3 %s\n" file))))
+
+(add-hook 'c++-mode-hook (lambda ()
+			   (local-set-key (kbd "<f5>") 'my-compile-and-run)))
+
+(add-hook 'python-mode-hook (lambda ()
+			      (local-set-key (kbd "<f5>") 'python-run)))
+
+(add-hook 'window-setup-hook
+	  (lambda ()
+	    (when recentf-list
+	      (recentf-open-files))))
+
+(add-hook 'term-mode-hook
+          (lambda ()
+            ;; 将 Cmd + v 绑定为向终端发送粘贴内容
+            (define-key term-raw-map (kbd "s-v") 'term-paste)))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes '(modus-operandi-tinted))
+ '(global-display-line-numbers-mode t)
+ '(tool-bar-mode nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "Menlo" :foundry "nil" :slant normal :weight regular :height 140 :width normal)))))
