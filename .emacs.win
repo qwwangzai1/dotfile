@@ -1,0 +1,65 @@
+;; -*- lexical-binding: t;-*-
+(global-display-line-numbers-mode 1)
+(setq-default cursor-type 'bar)
+(recentf-mode 1)
+(tool-bar-mode 0)
+(defvar term-name "*terminal*")
+(scroll-bar-mode 0)
+(electric-pair-mode 1)
+(setq visible-bell t)
+
+
+(set-default-coding-systems 'utf-8)
+(set-language-environment "UTF-8")
+
+(defun get-term ()
+  (if (get-buffer term-name)
+      (switch-to-buffer term-name)
+    (ansi-term "bash" "terminal")))
+
+
+(defun my-compile-and-run ()
+  (interactive)
+  (save-buffer)
+  (let* ((file (buffer-file-name))
+         (base (file-name-sans-extension file)))
+    (get-term)
+    (term-send-raw-string "clear\n")
+    (term-send-raw-string (format "g++ -std=c++17 -Wall -o %s '%s' && %s\n" base file base))))
+
+(defun python-run ()
+  (interactive)
+  (save-buffer)
+  (let ((file (buffer-file-name)))
+    (get-term)
+    (term-send-raw-string "clear\n")
+    (term-send-raw-string (format "python3 %s\n" file))))
+
+(add-hook 'c++-mode-hook (lambda ()
+			   (local-set-key (kbd "<f5>") 'my-compile-and-run)))
+
+(add-hook 'python-mode-hook (lambda ()
+			      (local-set-key (kbd "<f5>") 'python-run)))
+
+(add-hook 'term-mode-hook
+          (lambda ()
+            (define-key term-raw-map (kbd "C-y") 'term-paste)))
+
+(add-hook 'window-setup-hook
+	  (lambda ()
+	    (when recentf-list
+	      (recentf-open-files))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(global-display-line-numbers-mode t)
+ '(inhibit-startup-screen t)
+ '(tool-bar-mode nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "Sarasa Fixed SC" :foundry "outline" :slant normal :weight regular :height 141 :width normal)))))
